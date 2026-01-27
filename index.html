@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viral Video Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .platform-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .platform-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .platform-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .platform-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #333;
+            flex: 1;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platform-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75em;
+            color: #333;
+        }
+
+        .platform-badge.instagram {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+        }
+
+        .platform-badge.youtube {
+            background: #ff0000;
+            color: white;
+        }
+
+        .video-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            font-size: 0.95em;
+        }
+
+        .video-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.85em;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            color: #999;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: #667eea;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f5f5f5;
+            border-color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .empty-state-text {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .niche-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .niche-tag {
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .niche-tag:hover {
+            background: rgba(102, 126, 234, 0.4);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .search-controls {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Viral Video Finder</h1>
+            <p>Descubra vídeos virais por nicho no Instagram e YouTube</p>
+        </header>
+
+        <div class="search-box">
+            <div>
+                <label style="display: block; margin-bottom: 15px; font-size: 1em;">Selecione as Plataformas:</label>
+                <div class="platform-selector">
+                    <button class="platform-btn active" data-platform="instagram">
+                        📷 Instagram Reels
+                    </button>
+                    <button class="platform-btn active" data-platform="youtube">
+                        ▶️ YouTube Shorts
+                    </button>
+                </div>
+            </div>
+
+            <div class="search-controls">
+                <div class="control-group">
+                    <label for="niche">Nicho / Categoria</label>
+                    <input 
+                        type="text" 
+                        id="niche" 
+                        placeholder="Ex: Marketing, Fitness, Culinária..."
+                        autocomplete="off"
+                    >
+                </div>
+                <div class="control-group">
+                    <label for="language">Idioma</label>
+                    <select id="language">
+                        <option value="pt-BR">Português (Brasil)</option>
+                        <option value="pt-PT">Português (Portugal)</option>
+                        <option value="es">Español</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="period">Período</label>
+                    <select id="period">
+                        <option value="month">Últimos 30 dias</option>
+                        <option value="quarter">Últimos 90 dias</option>
+                        <option value="year">Último ano</option>
+                        <option value="all">Todos os tempos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">💡 Nichos em Alta (2026):</p>
+                <div class="niche-suggestions" id="nicheSuggestions">
+                    <span class="niche-tag">IA & Tecnologia</span>
+                    <span class="niche-tag">Finanças Pessoais</span>
+                    <span class="niche-tag">Bem-estar Senior</span>
+                    <span class="niche-tag">Criação de Conteúdo</span>
+                    <span class="niche-tag">Empreendedorismo</span>
+                    <span class="niche-tag">Visual Merchandising</span>
+                    <span class="niche-tag">Transformação Pessoal</span>
+                    <span class="niche-tag">Produtividade</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-search" id="searchBtn">🔍 Buscar Vídeos Virais</button>
+                <button class="btn btn-clear" id="clearBtn">Limpar</button>
+            </div>
+        </div>
+
+        <div id="resultsArea"></div>
+    </div>
+
+    <script>
+        const mockVideos = {
+            instagram: [
+                { title: "Dica de Marketing: Como viralizar no Instagram", views: 2500000, likes: 185000, format: "Reel", duration: "45s" },
+                { title: "Transformação visual em 3 minutos - Merchandising na prática", views: 1800000, likes: 142000, format: "Reel", duration: "3m" },
+                { title: "5 truques de IA que vão revolucionar seu negócio", views: 3200000, likes: 256000, format: "Reel", duration: "60s" },
+                { title: "Produtividade: organize sua vida em 1 semana", views: 1600000, likes: 128000, format: "Reel", duration: "2m" },
+                { title: "Finanças pessoais: comece a investir com R$100", views: 2100000, likes: 168000, format: "Reel", duration: "90s" },
+                { title: "Bem-estar: exercícios para a terceira idade", views: 890000, likes: 71200, format: "Reel", duration: "4m" },
+            ],
+            youtube: [
+                { title: "Como encontrar conteúdo viral no seu nicho - Análise completa", views: 5200000, likes: 312000, format: "Short", duration: "45s" },
+                { title: "Estratégia de empreendedorismo digital em 2026", views: 3800000, likes: 228000, format: "Short", duration: "60s" },
+                { title: "IA para criadores de conteúdo: guia prático", views: 4100000, likes: 246000, format: "Short", duration: "90s" },
+                { title: "Reputação online: construa sua marca pessoal", views: 2700000, likes: 162000, format: "Short", duration: "3m" },
+                { title: "Negócios B2B: estrutura de cursos online", views: 1900000, likes: 114000, format: "Short", duration: "5m" },
+                { title: "Tendências de mercado: setores em crescimento", views: 3300000, likes: 198000, format: "Short", duration: "2m" },
+            ]
+        };
+
+        let selectedPlatforms = ['instagram', 'youtube'];
+        let isSearching = false;
+
+        // Platform selector
+        document.querySelectorAll('.platform-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const platform = this.dataset.platform;
+                this.classList.toggle('active');
+                
+                if (selectedPlatforms.includes(platform)) {
+                    selectedPlatforms = selectedPlatforms.filter(p => p !== platform);
+                } else {
+                    selectedPlatforms.push(platform);
+                }
+                
+                if (selectedPlatforms.length === 0) {
+                    this.classList.add('active');
+                    selectedPlatforms = [platform];
+                }
+            });
+        });
+
+        // Niche suggestions
+        document.querySelectorAll('.niche-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                document.getElementById('niche').value = this.textContent;
+                performSearch();
+            });
+        });
+
+        // Search button
+        document.getElementById('searchBtn').addEventListener('click', performSearch);
+
+        // Clear button
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            document.getElementById('niche').value = '';
+            document.getElementById('language').value = 'pt-BR';
+            document.getElementById('period').value = 'month';
+            document.getElementById('resultsArea').innerHTML = '';
+        });
+
+        // Enter key support
+        document.getElementById('niche').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        function performSearch() {
+            const niche = document.getElementById('niche').value.trim();
+            
+            if (!niche) {
+                alert('Por favor, digite um nicho ou categoria');
+                return;
+            }
+
+            if (selectedPlatforms.length === 0) {
+                alert('Selecione ao menos uma plataforma');
+                return;
+            }
+
+            isSearching = true;
+            document.getElementById('resultsArea').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 20px; font-size: 1.1em;">Buscando vídeos virais de "${niche}"...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                displayResults(niche);
+                isSearching = false;
+            }, 1500);
+        }
+
+        function displayResults(niche) {
+            let allVideos = [];
+
+            if (selectedPlatforms.includes('instagram')) {
+                allVideos = allVideos.concat(
+                    mockVideos.instagram.map(v => ({ ...v, platform: 'instagram' }))
+                );
+            }
+
+            if (selectedPlatforms.includes('youtube')) {
+                allVideos = allVideos.concat(
+                    mockVideos.youtube.map(v => ({ ...v, platform: 'youtube' }))
+                );
+            }
+
+            // Shuffle and filter
+            allVideos = allVideos.sort(() => Math.random() - 0.5);
+
+            const language = document.getElementById('language').value;
+            const period = document.getElementById('period').value;
+
+            let html = `
+                <div style="color: white; margin-top: 20px; margin-bottom: 20px; font-size: 1em;">
+                    <strong>Resultados para:</strong> "${niche}" | 
+                    <strong>Plataformas:</strong> ${selectedPlatforms.map(p => p === 'instagram' ? 'Instagram' : 'YouTube').join(', ')} | 
+                    <strong>Idioma:</strong> ${getLanguageName(language)} | 
+                    <strong>Período:</strong> ${getPeriodName(period)}
+                </div>
+            `;
+
+            if (allVideos.length === 0) {
+                html += `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">Nenhum vídeo encontrado para este nicho.</div>
+                    </div>
+                `;
+            } else {
+                html += '<div class="results-container">';
+                
+                allVideos.forEach(video => {
+                    const platformIcon = video.platform === 'instagram' ? '📷' : '▶️';
+                    const platformLabel = video.platform === 'instagram' ? 'Instagram' : 'YouTube';
+                    const platformClass = video.platform;
+
+                    html += `
+                        <div class="video-card">
+                            <div class="video-thumbnail">
+                                ${platformIcon}
+                                <span class="platform-badge ${platformClass}">${platformLabel}</span>
+                            </div>
+                            <div class="video-info">
+                                <div class="video-title">${video.title}</div>
+                                <div class="video-stats">
+                                    <div class="stat">
+                                        <span class="stat-label">Visualizações</span>
+                                        <span class="stat-value">${formatNumber(video.views)}</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-label">Curtidas</span>
+                                        <span class="stat-value">${formatNumber(video.likes)}</span>
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.85em; color: #999; margin-bottom: 10px;">
+                                    📁 ${video.format} • ⏱️ ${video.duration}
+                                </div>
+                                <div class="video-actions">
+                                    <button class="action-btn" onclick="copyToClipboard('${video.title}')">📋 Copiar Título</button>
+                                    <button class="action-btn" onclick="alert('Abrir em ' + '${platformLabel}')">🔗 Abrir</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            }
+
+            document.getElementById('resultsArea').innerHTML = html;
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(0) + 'K';
+            }
+            return num.toString();
+        }
+
+        function getLanguageName(code) {
+            const names = {
+                'pt-BR': 'Português (Brasil)',
+                'pt-PT': 'Português (Portugal)',
+                'es': 'Español',
+                'en': 'English'
+            };
+            return names[code] || code;
+        }
+
+        function getPeriodName(period) {
+            const names = {
+                'month': 'Últimos 30 dias',
+                'quarter': 'Últimos 90 dias',
+                'year': 'Último ano',
+                'all': 'Todos os tempos'
+            };
+            return names[period] || period;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Título copiado para a área de transferência!');
+            });
+        }
+
+        // Initial empty state
+        document.getElementById('resultsArea').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🎬</div>
+                <div class="empty-state-text">Digite um nicho e clique em "Buscar Vídeos Virais" para começar</div>
+            </div>
+        `;
+    </script>
+</body>
+</html>
