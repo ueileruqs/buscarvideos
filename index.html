@@ -436,27 +436,26 @@
     <script>
         const mockVideos = {
             instagram: [
-                { title: "Dica de Marketing: Como viralizar no Instagram", views: 2500000, likes: 185000, format: "Reel", duration: "45s" },
-                { title: "Transformação visual em 3 minutos - Merchandising na prática", views: 1800000, likes: 142000, format: "Reel", duration: "3m" },
-                { title: "5 truques de IA que vão revolucionar seu negócio", views: 3200000, likes: 256000, format: "Reel", duration: "60s" },
-                { title: "Produtividade: organize sua vida em 1 semana", views: 1600000, likes: 128000, format: "Reel", duration: "2m" },
-                { title: "Finanças pessoais: comece a investir com R$100", views: 2100000, likes: 168000, format: "Reel", duration: "90s" },
-                { title: "Bem-estar: exercícios para a terceira idade", views: 890000, likes: 71200, format: "Reel", duration: "4m" },
+                { title: "Dica de Marketing: Como viralizar no Instagram", views: 2500000, likes: 185000, format: "Reel", duration: "45s", videoUrl: "https://www.instagram.com/reel/CyFGA78J8XI/" },
+                { title: "Transformação visual em 3 minutos - Merchandising na prática", views: 1800000, likes: 142000, format: "Reel", duration: "3m", videoUrl: "https://www.instagram.com/reel/CEjtoFQgmmD/" },
+                { title: "5 truques de IA que vão revolucionar seu negócio", views: 3200000, likes: 256000, format: "Reel", duration: "60s", videoUrl: "https://www.instagram.com/reel/CwOAwQhLpPo/" },
+                { title: "Produtividade: organize sua vida em 1 semana", views: 1600000, likes: 128000, format: "Reel", duration: "2m", videoUrl: "https://www.instagram.com/reel/Cz8c8J0vVsy/" },
+                { title: "Finanças pessoais: comece a investir com R$100", views: 2100000, likes: 168000, format: "Reel", duration: "90s", videoUrl: "https://www.instagram.com/reel/C3fYQjvRx0g/" },
+                { title: "Bem-estar: exercícios para a terceira idade", views: 890000, likes: 71200, format: "Reel", duration: "4m", videoUrl: "https://www.instagram.com/reel/C8kq7gDr2jD/" },
             ],
             youtube: [
-                { title: "Como encontrar conteúdo viral no seu nicho - Análise completa", views: 5200000, likes: 312000, format: "Short", duration: "45s" },
-                { title: "Estratégia de empreendedorismo digital em 2026", views: 3800000, likes: 228000, format: "Short", duration: "60s" },
-                { title: "IA para criadores de conteúdo: guia prático", views: 4100000, likes: 246000, format: "Short", duration: "90s" },
-                { title: "Reputação online: construa sua marca pessoal", views: 2700000, likes: 162000, format: "Short", duration: "3m" },
-                { title: "Negócios B2B: estrutura de cursos online", views: 1900000, likes: 114000, format: "Short", duration: "5m" },
-                { title: "Tendências de mercado: setores em crescimento", views: 3300000, likes: 198000, format: "Short", duration: "2m" },
+                { title: "Como encontrar conteúdo viral no seu nicho - Análise completa", views: 5200000, likes: 312000, format: "Short", duration: "45s", videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                { title: "Estratégia de empreendedorismo digital em 2026", views: 3800000, likes: 228000, format: "Short", duration: "60s", videoUrl: "https://www.youtube.com/watch?v=aqz-KE-bpKQ" },
+                { title: "IA para criadores de conteúdo: guia prático", views: 4100000, likes: 246000, format: "Short", duration: "90s", videoUrl: "https://www.youtube.com/watch?v=JGwWNGJdvx8" },
+                { title: "Reputação online: construa sua marca pessoal", views: 2700000, likes: 162000, format: "Short", duration: "3m", videoUrl: "https://www.youtube.com/watch?v=ysz5S6PUM-U" },
+                { title: "Negócios B2B: estrutura de cursos online", views: 1900000, likes: 114000, format: "Short", duration: "5m", videoUrl: "https://www.youtube.com/watch?v=ScMzIvxBSi4" },
+                { title: "Tendências de mercado: setores em crescimento", views: 3300000, likes: 198000, format: "Short", duration: "2m", videoUrl: "https://www.youtube.com/watch?v=ktvTqknDobU" },
             ]
         };
 
         let selectedPlatforms = ['instagram', 'youtube'];
         let isSearching = false;
 
-        // Platform selector
         document.querySelectorAll('.platform-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const platform = this.dataset.platform;
@@ -475,7 +474,6 @@
             });
         });
 
-        // Niche suggestions
         document.querySelectorAll('.niche-tag').forEach(tag => {
             tag.addEventListener('click', function() {
                 document.getElementById('niche').value = this.textContent;
@@ -483,10 +481,8 @@
             });
         });
 
-        // Search button
         document.getElementById('searchBtn').addEventListener('click', performSearch);
 
-        // Clear button
         document.getElementById('clearBtn').addEventListener('click', function() {
             document.getElementById('niche').value = '';
             document.getElementById('language').value = 'pt-BR';
@@ -494,7 +490,6 @@
             document.getElementById('resultsArea').innerHTML = '';
         });
 
-        // Enter key support
         document.getElementById('niche').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') performSearch();
         });
@@ -569,7 +564,7 @@
                     const platformIcon = video.platform === 'instagram' ? '📷' : '▶️';
                     const platformLabel = video.platform === 'instagram' ? 'Instagram' : 'YouTube';
                     const platformClass = video.platform;
-                    const videoUrl = buildSearchUrl(video.platform, video.searchKeyword);
+                    const videoUrl = video.videoUrl || fallbackUrl(video.platform, video.searchKeyword);
 
                     html += `
                         <div class="video-card">
@@ -636,7 +631,7 @@
             return names[period] || period;
         }
 
-        function buildSearchUrl(platform, query) {
+        function fallbackUrl(platform, query) {
             const safeQuery = encodeURIComponent(query.trim());
 
             if (platform === 'instagram') {
@@ -664,7 +659,6 @@
             });
         }
 
-        // Initial empty state
         document.getElementById('resultsArea').innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">🎬</div>
@@ -674,4 +668,3 @@
     </script>
 </body>
 </html>
-
