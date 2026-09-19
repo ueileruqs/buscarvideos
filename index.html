@@ -531,17 +531,16 @@
 
             if (selectedPlatforms.includes('instagram')) {
                 allVideos = allVideos.concat(
-                    mockVideos.instagram.map(v => ({ ...v, platform: 'instagram' }))
+                    mockVideos.instagram.map(v => ({ ...v, platform: 'instagram', searchKeyword: niche }))
                 );
             }
 
             if (selectedPlatforms.includes('youtube')) {
                 allVideos = allVideos.concat(
-                    mockVideos.youtube.map(v => ({ ...v, platform: 'youtube' }))
+                    mockVideos.youtube.map(v => ({ ...v, platform: 'youtube', searchKeyword: niche }))
                 );
             }
 
-            // Shuffle and filter
             allVideos = allVideos.sort(() => Math.random() - 0.5);
 
             const language = document.getElementById('language').value;
@@ -570,6 +569,7 @@
                     const platformIcon = video.platform === 'instagram' ? '📷' : '▶️';
                     const platformLabel = video.platform === 'instagram' ? 'Instagram' : 'YouTube';
                     const platformClass = video.platform;
+                    const videoUrl = buildSearchUrl(video.platform, video.searchKeyword);
 
                     html += `
                         <div class="video-card">
@@ -593,8 +593,8 @@
                                     📁 ${video.format} • ⏱️ ${video.duration}
                                 </div>
                                 <div class="video-actions">
-                                    <button class="action-btn" onclick="copyToClipboard('${video.title}')">📋 Copiar Título</button>
-                                    <button class="action-btn" onclick="alert('Abrir em ' + '${platformLabel}')">🔗 Abrir</button>
+                                    <button class="action-btn" onclick="copyToClipboard('${escapeHtml(video.title)}')">📋 Copiar Título</button>
+                                    <button class="action-btn" onclick="window.open('${videoUrl}', '_blank', 'noopener,noreferrer')">🔗 Abrir</button>
                                 </div>
                             </div>
                         </div>
@@ -636,9 +636,31 @@
             return names[period] || period;
         }
 
+        function buildSearchUrl(platform, query) {
+            const safeQuery = encodeURIComponent(query.trim());
+
+            if (platform === 'instagram') {
+                return `https://www.instagram.com/explore/tags/${safeQuery}/`;
+            }
+
+            return `https://www.youtube.com/results?search_query=${safeQuery}`;
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
+            const plainText = text.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&amp;/g, '&');
+            navigator.clipboard.writeText(plainText).then(() => {
                 alert('✅ Título copiado para a área de transferência!');
+            }).catch(() => {
+                alert('Não foi possível copiar automaticamente.');
             });
         }
 
@@ -652,3 +674,4 @@
     </script>
 </body>
 </html>
+
